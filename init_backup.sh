@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# Intended to be run by administrator
+# Creates folder `/home/$username/backup_conf.d` that stores configurations per archive file.
+# Creates folder `/backups/$username/archives` that stores the archive files.
+
+
 # Check if backup folder exists:
 # whoami
 # create if necesssary
