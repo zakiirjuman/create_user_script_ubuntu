@@ -12,6 +12,7 @@ async function read_config(config_file_path) {
     if (check_backup_paths(config.backup_paths)
         && check_archive_extension(config.archive_extension)
         && check_archive_destination(config.archive_destination)
+        && check_cron_schedule(config.cron_schedule)
         && await check_username(config.username)
         ) {
         return config;
@@ -62,6 +63,15 @@ function check_archive_destination(archive_destination) {
     } else {
         console.log('archive destination does not exist');
         return false;
+    }
+}
+
+function check_cron_schedule(cron_schedule) {
+    if (!cron_schedule) {
+        return false;
+    } else {
+        const regex = /(@(annually|yearly|monthly|weekly|daily|hourly|reboot))|(@every (\d+(ns|us|µs|ms|s|m|h))+)|((((\d+,)+\d+|(\d+(\/|-)\d+)|\d+|\*) ?){5,7})/;
+        return regex.test(cron_schedule);
     }
 }
 

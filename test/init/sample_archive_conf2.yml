@@ -1,0 +1,8 @@
+archive_name: home2
+archive_extension: .tar.gz
+username: ubuntu
+backup_paths:
+  - /home/ubuntu/ubuntu_scripts/test/init/backup_paths/test_file3.txt
+  - /home/ubuntu/ubuntu_scripts/test/init/backup_paths/test_file4.txt
+archive_destination: /backups/ubuntu
+cron_schedule: 0 0 0 * *

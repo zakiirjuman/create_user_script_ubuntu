@@ -1,0 +1,7 @@
+# This file contains a list of paths to other configuration files.
+# It will be monitored by chokidar. The process that monitors this file
+# should be activated as a service on startup.
+
+conf_path:
+  - test/init/sample_archive_conf.yml
+  - test/init/sample_archive_conf2.yml

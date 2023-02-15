@@ -27,7 +27,7 @@ let expected_shell_script = `#!/bin/bash\ntar -czf /backups/ubuntu/test_archive.
 
 describe('createShellScript', function() {
     
-        it('should return a shell script', async function() {
+        it('should create a shell script and return the filename that was created', async function() {
             await createShellScript(config, shell_script_folder);
             //read the shell script
             let shell_script = await fs.promises.readFile(`${shell_script_folder}/${config.archive_name}`, 'utf8');

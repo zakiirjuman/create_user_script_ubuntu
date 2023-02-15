@@ -1,4 +1,5 @@
 // This function takes the config object and creates a shell script that will be executed by the cron job.
+// It should return the filename of the shell script that was created.
 
 // Promisify writeFile
 const fs = require('fs');
@@ -29,8 +30,10 @@ async function createShellScript({archive_name, archive_extension, archive_desti
     // Define the shell script
     let shell_script = `#!/bin/bash\ntar -czf ${destination_path} ${backup_paths_string}\nchown ${username}:${username} ${destination_path}`;
 
-    // Write the shell script to a file
-    return writeFile(`${shell_script_folder}/${archive_name}`, shell_script)
+    // Write the shell script to a file and return the filename
+    return writeFile(`${shell_script_folder}/${archive_name}`, shell_script).then(() => {
+        return `${shell_script_folder}/${archive_name}`;
+    });
 }
 
 module.exports = createShellScript;

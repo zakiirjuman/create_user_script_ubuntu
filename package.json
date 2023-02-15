@@ -2,7 +2,7 @@
   "name": "@zakiirjuman/ubuntu_scripts",
   "version": "1.0.0",
   "description": "",
-  "main": "init.js",
+  "main": "",
   "scripts": {
     "test": "mocha \"test/**/*.js\""
   },
