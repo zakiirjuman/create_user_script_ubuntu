@@ -1,14 +1,20 @@
 // This file should test the readConfig.js file with the sample_archive_conf.yaml file
-let readConfig = require('../readConfig.js');
 let assert = require('assert');
+let resolve = require('path').resolve;
 
-let sample_path = 'read_config_test_inputs/sample_archive_conf.yml';
-let user_fail_path = 'read_config_test_inputs/username_fail.yml';
-let archive_destination_fail_path = 'read_config_test_inputs/archive_destination_fail.yml';
-let archive_extension_fail_path = 'read_config_test_inputs/archive_extension_fail.yml';
+// Require resolves paths relative to this folder
+let readConfig = require('../../src/readConfig.js');
+
+// Resolve does not work as expected with mocha and is resolving relative to ../../
+let this_dir = resolve('./test/readConfig');
+let sample_path = `${this_dir}/sample_archive_conf.yml`;
+let username_fail_path = `${this_dir}/username_fail.yml`;
+let archive_destination_fail_path = `${this_dir}/archive_destination_fail.yml`;
+let archive_extension_fail_path = `${this_dir}/archive_extension_fail.yml`;
 
 
 describe('readConfig', function() {
+
     it('should return a config object', async function() {
         let config_output = await readConfig(sample_path);
         let { backup_paths, archive_extension, archive_destination, username, cron_schedule } = config_output;
@@ -19,7 +25,7 @@ describe('readConfig', function() {
     });
 
     it('should return false if the username is invalid', async function() {
-        let config_output = await readConfig(user_fail_path);
+        let config_output = await readConfig(username_fail_path);
         assert.equal(config_output, false);
     });
 

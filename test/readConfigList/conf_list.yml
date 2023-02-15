@@ -3,6 +3,6 @@
 # should be activated as a service on startup.
 
 conf_path:
-  - ./read_conf_list_test_inputs/sample_archive_conf.yml
-  - ./read_conf_list_test_inputs/sample_archive_conf2.yml
-  - ./read_conf_list_test_inputs/sample_archive_conf6.yml
+  - test/readConfigList/sample_archive_conf.yml
+  - test/readConfigList/sample_archive_conf2.yml
+  - test/readConfigList/sample_archive_conf6.yml
