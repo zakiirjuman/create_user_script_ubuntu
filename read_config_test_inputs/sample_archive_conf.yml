@@ -1,0 +1,10 @@
+# This sample configuration file is used by multiple programs.
+# It is formatted in YAML.
+
+archive_name: home
+archive_extension: .tar.gz
+username: ubuntu
+backup_paths:
+  - /home/ubuntu
+archive_destination: /backups/ubuntu
+cron_schedule: "0 0 0 * *"

@@ -1,0 +1,25 @@
+{
+  "name": "@zakiirjuman/ubuntu_scripts",
+  "version": "1.0.0",
+  "description": "",
+  "main": "init.js",
+  "scripts": {
+    "test": "mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zakiirjuman/ubuntu_scripts.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/zakiirjuman/ubuntu_scripts/issues"
+  },
+  "homepage": "https://github.com/zakiirjuman/ubuntu_scripts#readme",
+  "dependencies": {
+    "chokidar": "^3.5.3",
+    "cron": "^2.2.0",
+    "js-yaml": "^4.1.0",
+    "mocha": "^10.2.0"
+  }
+}
