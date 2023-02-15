@@ -8,6 +8,7 @@ const createShellScript = require('createShellScript.js');
 
 let default_sh_folder = './shell_scripts'
 default_sh_folder = path.resolve(default_sh_folder);
+console.log(default_sh_folder);
 
 
 
