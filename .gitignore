@@ -1,1 +1,3 @@
 node_modules
+/test/init/cron
+/test/init/scripts

@@ -50,8 +50,8 @@ async function init (conf_list_path = default_conf_list_path, sh_folder = defaul
         }
         return conf.value;
     })
-
     confs_resolved = confs_resolved.filter(Boolean);
+    
     // Use the confs_resolved to createShellScripts
     let promiseArray = [];
     confs_resolved.forEach(config => {
@@ -60,20 +60,18 @@ async function init (conf_list_path = default_conf_list_path, sh_folder = defaul
 
     // Wait for all promises to resolve and then filter out the null values
     // collect the filenames.
-    let cron_jobs = await Promise.allSettled(promiseArray);
-    cron_jobs = cron_jobs.map(filename => {
+    confs_resolved = await Promise.allSettled(promiseArray);
+    confs_resolved = confs_resolved.map(filename => {
         if (filename.status === 'rejected') {
             return null;
         }
         return filename.value;
     })
 
-    cron_jobs = cron_jobs.filter(Boolean);
-    cron_jobs = cron_jobs.map(job => {
-        return {cron_entry: job.cron_schedule + ' root ' + job.script_path, cron_schedule: job.cron_schedule, script_path: job.script_path}
-    })
+    confs_resolved = confs_resolved.filter(Boolean);
+    console.log(confs_resolved);
 
-    let cron_entries = cron_jobs.map(job => job.cron_entry);
+    let cron_entries = confs_resolved.map(conf => conf.cron_entry);
     // use cron_entries to create a single cron file called cron_backup in cron_folder
     // the cron file needs to have one cron entry for every object in cron_jobs.
     try{
@@ -85,6 +83,8 @@ async function init (conf_list_path = default_conf_list_path, sh_folder = defaul
 
 
     // Use the conf_list to create watchers
+    console.log('Conf_list:')
+    conf_list = confs_resolved.map(conf => conf.config_file_path)
     console.log(conf_list)
     let confFileWatcher = chokidar
         .watch(conf_list, { persistent: true })
@@ -137,10 +137,16 @@ async function init (conf_list_path = default_conf_list_path, sh_folder = defaul
         console.log('Configuration List being watched at:');
         console.log(confListWatcher.getWatched());    
     })
-    .on('change', async (path) => {
+    .on('change', async (conf_list_path) => {
         // Read the new conf_list
         console.log('change detected')
-        let new_conf_list = readConfigList(path);
+        // wrap readConfigList in a try catch block
+        let new_conf_list;
+        try {
+            new_conf_list = readConfigList(conf_list_path);
+        } catch (err) {
+            return Promise.reject(new Error(`Invalid conf list path: ${conf_list_path}`));
+        }
         // Get the folders and files returned by confFileWatcher.getWatched()
         let watched_paths = confFileWatcher.getWatched();
         let watched_files = [];

@@ -15,7 +15,7 @@ async function read_config(config_file_path) {
         && check_cron_schedule(config.cron_schedule)
         && await check_username(config.username)
         ) {
-        return config;
+        return {config_file_path, ...config};
     } else {
         console.log('config file is invalid');
         return false;
