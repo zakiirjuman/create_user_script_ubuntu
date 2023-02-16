@@ -2,20 +2,21 @@
 // contains the paths that are in the conf_list but not in the current_watchers. The second array contains
 // the paths that are in the current_watchers but not in the conf_list.
 
-function compareConfList(conf_list, current_watchers) {
-    let new_watchers = [];
-    let old_watchers = [];
+function compareConfLists(conf_list, current_watchers) {
+    let files_to_add = [];
+    let files_to_remove = [];
     for (let i = 0; i < conf_list.length; i++) {
         if (!current_watchers.includes(conf_list[i])) {
-            new_watchers.push(conf_list[i]);
+            files_to_add.push(conf_list[i]);
         }
     }
     for (let i = 0; i < current_watchers.length; i++) {
         if (!conf_list.includes(current_watchers[i])) {
-            old_watchers.push(current_watchers[i]);
+            files_to_remove.push(current_watchers[i]);
         }
     }
-    return [new_watchers, old_watchers];
+    return {files_to_add, files_to_remove};
 }
 
+module.exports = compareConfLists;
 

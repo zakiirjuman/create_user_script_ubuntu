@@ -7,6 +7,7 @@ const path = require('path');
 const readConfigList = require('./readConfigList.js');
 const readConfig = require('./readConfig.js');
 const createShellScript = require('./createShellScript.js');
+const compareConfLists = require('./compareConfLists.js');
 const chokidar = require('chokidar');
 const fs = require('fs');
 const os = require('os');
@@ -85,9 +86,12 @@ async function init (conf_list_path = default_conf_list_path, sh_folder = defaul
 
     // Use the conf_list to create watchers
     console.log(conf_list)
-    let confFileWatcher = chokidar.watch(conf_list, { persistent: true });
-
-    confFileWatcher
+    let confFileWatcher = chokidar
+        .watch(conf_list, { persistent: true })
+        .on('ready', () => {
+            console.log('Watching Configuration Files at:');
+            console.log(confFileWatcher.getWatched());    
+        })
         .on('change', async (path) => { 
             console.log(`File ${path} has been changed`);
             let config = await readConfig(path);
@@ -115,17 +119,54 @@ async function init (conf_list_path = default_conf_list_path, sh_folder = defaul
                 return Promise.reject(new Error(`Error writing cron file: ${err}`));
             }
         })
-        .on('ready', () => {
-        console.log('watched');
-        console.log(confFileWatcher.getWatched());    
-        })
         .on('error', (err) => {
             console.log(`Error: ${err}`);
-        });
+        })
+        .on('add', (path) => {
+            console.log(`Config File ${path} is now being watched`);
+        })
+        .on('unlink', (path) => {
+            console.log(`Config File ${path} is no longer being watched`);
+        })
     
 
-    // Initialize the watcher
-    //const confListWatcher = chokidar.watch(conf_list_path, { persistent: true });
+    // Initialize the confListWatcher
+    const confListWatcher = chokidar
+    .watch(conf_list_path, { persistent: true })
+    .on('ready', () => {
+        console.log('Configuration List being watched at:');
+        console.log(confListWatcher.getWatched());    
+    })
+    .on('change', async (path) => {
+        // Read the new conf_list
+        console.log('change detected')
+        let new_conf_list = readConfigList(path);
+        // Get the folders and files returned by confFileWatcher.getWatched()
+        let watched_paths = confFileWatcher.getWatched();
+        let watched_files = [];
+        //console.log(watched_paths);
+        // Each key of watched_paths represents a folder, and the value is an array of files in that folder
+        // Get the full location of each file in the watched_paths object
+        for (const [folder, files] of Object.entries(watched_paths)) {
+            files.forEach(file => {
+                watched_files.push(`${folder}/${file}`);
+            })
+        }
+        console.log('watched files: ')
+        console.log(watched_files);
+        // call compareConfLists to get the files that need to be added and removed
+        let {files_to_add, files_to_remove} = compareConfLists(new_conf_list, watched_files);
+        console.log('files to add: ')
+        console.log(files_to_add);
+        console.log('files to remove:')
+        console.log(files_to_remove);
+        try{
+            await confFileWatcher.unwatch(files_to_remove);
+            confFileWatcher.add(files_to_add);
+        } catch (err) {
+            console.log(`Error updating confFileWatcher: ${err}`);
+        }
+    })
 }
 
 //init();
