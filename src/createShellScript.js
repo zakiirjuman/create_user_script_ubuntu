@@ -6,7 +6,7 @@ const fs = require('fs');
 const util = require('util');
 const writeFile = util.promisify(fs.writeFile);
 
-async function createShellScript({archive_name, archive_extension, archive_destination, backup_paths, username} = {}, shell_script_folder) {
+async function createShellScript({archive_name, archive_extension, archive_destination, backup_paths, username, cron_schedule} = {}, shell_script_folder) {
 
     if(!archive_name || !archive_extension || !archive_destination || !backup_paths || !username){
         return Promise.reject(new Error('Config is invalid'));
@@ -30,9 +30,9 @@ async function createShellScript({archive_name, archive_extension, archive_desti
     // Define the shell script
     let shell_script = `#!/bin/bash\ntar -czf ${destination_path} ${backup_paths_string}\nchown ${username}:${username} ${destination_path}`;
 
-    // Write the shell script to a file and return the filename
+    // Write the shell script to a file and return the script_path and cron_schedule
     return writeFile(`${shell_script_folder}/${archive_name}`, shell_script).then(() => {
-        return `${shell_script_folder}/${archive_name}`;
+        return {script_path: `${shell_script_folder}/${archive_name}`, cron_schedule: cron_schedule};
     });
 }
 

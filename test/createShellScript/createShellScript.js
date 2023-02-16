@@ -16,7 +16,8 @@ let config = {
     archive_extension: '.tar.gz',
     archive_destination: '/backups/ubuntu',
     backup_paths: ['/home/ubuntu/test1', '/home/ubuntu/test2'],
-    username: 'ubuntu'
+    username: 'ubuntu',
+    cron_schedule: '0 0 0 * *'
 }
 
 // Define the shell script folder
@@ -27,11 +28,13 @@ let expected_shell_script = `#!/bin/bash\ntar -czf /backups/ubuntu/test_archive.
 
 describe('createShellScript', function() {
     
-        it('should create a shell script and return the filename that was created', async function() {
-            await createShellScript(config, shell_script_folder);
+        it('should create a shell script and return an object that contains the script_path and cron_schedule', async function() {
+            let {script_path, cron_schedule} = await createShellScript(config, shell_script_folder);
             //read the shell script
             let shell_script = await fs.promises.readFile(`${shell_script_folder}/${config.archive_name}`, 'utf8');
             assert.equal(shell_script, expected_shell_script);
+            assert.equal(script_path, `${shell_script_folder}/${config.archive_name}`);
+            assert.equal(cron_schedule, config.cron_schedule);
         });
     
         it('should return rejected promise and error if the shell script folder does not exist', async function() {
