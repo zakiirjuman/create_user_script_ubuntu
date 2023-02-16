@@ -8,6 +8,8 @@ const readConfigList = require('./readConfigList.js');
 const readConfig = require('./readConfig.js');
 const createShellScript = require('./createShellScript.js');
 const compareConfLists = require('./compareConfLists.js');
+const resolveNewConfs = require('./resolveNewConfs.js');
+
 const chokidar = require('chokidar');
 const fs = require('fs');
 const os = require('os');
@@ -38,37 +40,7 @@ async function init (conf_list_path = default_conf_list_path, sh_folder = defaul
         return Promise.reject(new Error(`Invalid cron folder path: ${cron_folder}`));
     }
 
-    // For each element in the conf_list, use readConfig to read the file and create an array with all of the config objects
-    let confs = [];
-    conf_list.forEach(conf => {
-        confs.push(readConfig(conf))
-    });
-    let confs_resolved = await Promise.allSettled(confs);
-    confs_resolved = confs_resolved.map(conf => {
-        if (conf.status === 'rejected') {
-            return null;
-        }
-        return conf.value;
-    })
-    confs_resolved = confs_resolved.filter(Boolean);
-    
-    // Use the confs_resolved to createShellScripts
-    let promiseArray = [];
-    confs_resolved.forEach(config => {
-        promiseArray.push(createShellScript(config, sh_folder));
-    });
-
-    // Wait for all promises to resolve and then filter out the null values
-    // collect the filenames.
-    confs_resolved = await Promise.allSettled(promiseArray);
-    confs_resolved = confs_resolved.map(filename => {
-        if (filename.status === 'rejected') {
-            return null;
-        }
-        return filename.value;
-    })
-
-    confs_resolved = confs_resolved.filter(Boolean);
+    let confs_resolved = await resolveNewConfs(conf_list, sh_folder);
     console.log(confs_resolved);
 
     let cron_entries = confs_resolved.map(conf => conf.cron_entry);
@@ -166,7 +138,32 @@ async function init (conf_list_path = default_conf_list_path, sh_folder = defaul
         console.log(files_to_add);
         console.log('files to remove:')
         console.log(files_to_remove);
-        try{
+
+        let new_confs_resolved = await resolveNewConfs(files_to_add, sh_folder);
+        console.log('files to add: ')
+        console.log(new_confs_resolved);
+
+        //use files_to_remove to remove elements from confs_resolved
+        confs_resolved = confs_resolved.filter(conf => !files_to_remove.includes(conf.config_file_path));
+        //remove elements from confs_resolved that also have the same archive name as the new_confs_resolved
+        confs_resolved = confs_resolved.filter(conf => !new_confs_resolved.some(new_conf => new_conf.archive_name === conf.archive_name));
+        //add new_confs_resolved to confs_resolved
+        confs_resolved = confs_resolved.concat(new_confs_resolved);
+
+        //update cron_entries
+        let cron_entries = confs_resolved.map(conf => conf.cron_entry);
+        // use cron_entries to create a single cron file called cron_backup in cron_folder
+        // the cron file needs to have one cron entry for every object in cron_jobs.
+        try {
+            fs.writeFileSync(path.join(cron_folder, 'cron_backup'), cron_entries.join(os.EOL));
+        }
+        catch (err) {
+            return Promise.reject(new Error(`Error writing cron file: ${err}`));
+        }       
+
+
+        files_to_add = confs_resolved.map(conf => conf.config_file_path);
+        try {
             await confFileWatcher.unwatch(files_to_remove);
             confFileWatcher.add(files_to_add);
         } catch (err) {

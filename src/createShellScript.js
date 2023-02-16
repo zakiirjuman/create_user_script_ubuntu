@@ -1,5 +1,5 @@
 // This function takes the config object and creates a shell script that will be executed by the cron job.
-// It should return the filename of the shell script that was created.
+// It returns the path to the shell script and the cron entry as well as the original config object.
 
 // Promisify writeFile
 const fs = require('fs');
