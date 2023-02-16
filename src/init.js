@@ -7,6 +7,7 @@ const path = require('path');
 const readConfigList = require('./readConfigList.js');
 const readConfig = require('./readConfig.js');
 const createShellScript = require('./createShellScript.js');
+const chokidar = require('chokidar');
 const fs = require('fs');
 const os = require('os');
 
@@ -68,14 +69,14 @@ async function init (conf_list_path = default_conf_list_path, sh_folder = defaul
 
     cron_jobs = cron_jobs.filter(Boolean);
     cron_jobs = cron_jobs.map(job => {
-        return job.cron_schedule + ' root ' + job.script_path;
+        return {cron_entry: job.cron_schedule + ' root ' + job.script_path, cron_schedule: job.cron_schedule, script_path: job.script_path}
     })
 
-
-    // use cron_jobs to create a single cron file called cron_backup in cron_folder
+    let cron_entries = cron_jobs.map(job => job.cron_entry);
+    // use cron_entries to create a single cron file called cron_backup in cron_folder
     // the cron file needs to have one cron entry for every object in cron_jobs.
     try{
-        fs.writeFileSync(path.join(cron_folder, 'cron_backup'), cron_jobs.join(os.EOL));
+        fs.writeFileSync(path.join(cron_folder, 'cron_backup'), cron_entries.join(os.EOL));
     }
     catch (err) {
         return Promise.reject(new Error(`Error writing cron file: ${err}`));
@@ -83,18 +84,48 @@ async function init (conf_list_path = default_conf_list_path, sh_folder = defaul
 
 
     // Use the conf_list to create watchers
-    /*let confFileWatcher = chokidar.watch(conf_list, { persistent: true });
+    console.log(conf_list)
+    let confFileWatcher = chokidar.watch(conf_list, { persistent: true });
 
     confFileWatcher
         .on('change', async (path) => { 
             console.log(`File ${path} has been changed`);
             let config = await readConfig(path);
+            // Update the script always
+            try {
+                await createShellScript(config, sh_folder);
+            } catch (err) {
+                console.log(`Error creating shell script: ${err}`);
+            }
+            
+            // Look for a change in the cron schedule and update the cron entry if needed
+            let cron_job = cron_jobs.find(job => job.script_path === config.script_path);
+            if (cron_job.cron_schedule !== config.cron_schedule) {
+                cron_job.cron_schedule = config.cron_schedule;
+                cron_job.cron_entry = cron_job.cron_schedule + ' root ' + cron_job.script_path;
+            }
 
-            // TODO: Add code to set cron job
+            let cron_entries = cron_jobs.map(job => job.cron_entry);
+            // use cron_entries to create a single cron file called cron_backup in cron_folder
+            // the cron file needs to have one cron entry for every object in cron_jobs.
+            try{
+                fs.writeFileSync(path.join(cron_folder, 'cron_backup'), cron_entries.join(os.EOL));
+            }
+            catch (err) {
+                return Promise.reject(new Error(`Error writing cron file: ${err}`));
+            }
         })
+        .on('ready', () => {
+        console.log('watched');
+        console.log(confFileWatcher.getWatched());    
+        })
+        .on('error', (err) => {
+            console.log(`Error: ${err}`);
+        });
+    
 
     // Initialize the watcher
-    const confListWatcher = chokidar.watch(conf_list_path, { persistent: true });*/
+    //const confListWatcher = chokidar.watch(conf_list_path, { persistent: true });
 }
 
 //init();
