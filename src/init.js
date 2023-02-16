@@ -43,16 +43,7 @@ async function init (conf_list_path = default_conf_list_path, sh_folder = defaul
     let confs_resolved = await resolveNewConfs(conf_list, sh_folder);
     console.log(confs_resolved);
 
-    let cron_entries = confs_resolved.map(conf => conf.cron_entry);
-    // use cron_entries to create a single cron file called cron_backup in cron_folder
-    // the cron file needs to have one cron entry for every object in cron_jobs.
-    try{
-        fs.writeFileSync(path.join(cron_folder, 'cron_backup'), cron_entries.join(os.EOL));
-    }
-    catch (err) {
-        return Promise.reject(new Error(`Error writing cron file: ${err}`));
-    }
-
+    updateCronEntries(confs_resolved, cron_folder);
 
     // Use the conf_list to create watchers
     console.log('Conf_list:')
@@ -64,41 +55,29 @@ async function init (conf_list_path = default_conf_list_path, sh_folder = defaul
             console.log('Watching Configuration Files at:');
             console.log(confFileWatcher.getWatched());    
         })
-        .on('change', async (path) => { 
-            console.log(`File ${path} has been changed`);
-            let config = await readConfig(path);
-            // Update the script always
-            try {
-                await createShellScript(config, sh_folder);
-            } catch (err) {
-                console.log(`Error creating shell script: ${err}`);
-            }
-            
-            // Look for a change in the cron schedule and update the cron entry if needed
-            let cron_job = cron_jobs.find(job => job.script_path === config.script_path);
-            if (cron_job.cron_schedule !== config.cron_schedule) {
-                cron_job.cron_schedule = config.cron_schedule;
-                cron_job.cron_entry = cron_job.cron_schedule + ' root ' + cron_job.script_path;
-            }
-
-            let cron_entries = cron_jobs.map(job => job.cron_entry);
-            // use cron_entries to create a single cron file called cron_backup in cron_folder
-            // the cron file needs to have one cron entry for every object in cron_jobs.
-            try{
-                fs.writeFileSync(path.join(cron_folder, 'cron_backup'), cron_entries.join(os.EOL));
-            }
-            catch (err) {
-                return Promise.reject(new Error(`Error writing cron file: ${err}`));
-            }
+        .on('change', async (changed_path) => { 
+            console.log(`File ${changed_path} has been changed`);
+            let new_confs_resolved = await resolveNewConfs([changed_path], sh_folder);
+            console.log('new_confs_resolved: ');
+            console.log(new_confs_resolved);
+            //remove elements from confs_resolved that also have the same archive name as the new_confs_resolved
+            confs_resolved = confs_resolved.filter(conf => !new_confs_resolved.some(new_conf => new_conf.archive_name === conf.archive_name));
+            //add new_confs_resolved to confs_resolved
+            confs_resolved = confs_resolved.concat(new_confs_resolved);
+            console.log('confs_resolved: ');
+            console.log(confs_resolved);
+            //create cron_entries from confs_resolved
+            updateCronEntries(confs_resolved, cron_folder);
+        
         })
         .on('error', (err) => {
             console.log(`Error: ${err}`);
         })
-        .on('add', (path) => {
-            console.log(`Config File ${path} is now being watched`);
+        .on('add', (changed_path) => {
+            console.log(`Config File ${changed_path} is now being watched`);
         })
-        .on('unlink', (path) => {
-            console.log(`Config File ${path} is no longer being watched`);
+        .on('unlink', (changed_path) => {
+            console.log(`Config File ${changed_path} is no longer being watched`);
         })
     
 
@@ -151,16 +130,7 @@ async function init (conf_list_path = default_conf_list_path, sh_folder = defaul
         confs_resolved = confs_resolved.concat(new_confs_resolved);
 
         //update cron_entries
-        let cron_entries = confs_resolved.map(conf => conf.cron_entry);
-        // use cron_entries to create a single cron file called cron_backup in cron_folder
-        // the cron file needs to have one cron entry for every object in cron_jobs.
-        try {
-            fs.writeFileSync(path.join(cron_folder, 'cron_backup'), cron_entries.join(os.EOL));
-        }
-        catch (err) {
-            return Promise.reject(new Error(`Error writing cron file: ${err}`));
-        }       
-
+        updateCronEntries(confs_resolved, cron_folder);
 
         files_to_add = confs_resolved.map(conf => conf.config_file_path);
         try {
@@ -170,6 +140,18 @@ async function init (conf_list_path = default_conf_list_path, sh_folder = defaul
             console.log(`Error updating confFileWatcher: ${err}`);
         }
     })
+}
+
+function updateCronEntries(confs_resolved, cron_folder) {
+    let cron_entries = confs_resolved.map(conf => conf.cron_entry);
+    // use cron_entries to create a single cron file called cron_backup in cron_folder
+    // the cron file needs to have one cron entry for every object in cron_jobs.
+    try {
+        fs.writeFileSync(path.join(cron_folder, 'cron_backup'), cron_entries.join(os.EOL));
+    }
+    catch (err) {
+        return new Error(`Error writing cron file: ${err}`);
+    }       
 }
 
 //init();
