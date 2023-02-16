@@ -12,6 +12,9 @@ let fs = require('fs');
 
 describe('init', function() {  
     before(function() {
+        fs.rmdirSync(resolve('./test/init/backup_paths'), {recursive: true});
+        fs.rmdirSync(resolve('./test/init/scripts'), {recursive: true});
+        fs.rmdirSync(resolve('./test/init/cron'), {recursive: true});
         // Artificially create backup paths to work with:
         //  - Create a folder in test/init called backup_paths
         fs.mkdirSync(resolve('./test/init/backup_paths'));
@@ -62,17 +65,19 @@ describe('init', function() {
         }
     });
     
-    it('should be able to create script files', async function() {
+    it('should be able to create script files and cron file', async function() {
         await init(resolve('./test/init/conf_list.yml'), resolve('./test/init/scripts'), resolve('./test/init/cron'));
         // Check that the script files were created
         let files = fs.readdirSync(resolve('./test/init/scripts'));
         assert.equal(files.length, 2);
+        // Check that the cron file was created
+        let cron_files = fs.readdirSync(resolve('./test/init/cron'));
+        assert.equal(cron_files.length, 1);
+        
     });
 
     after(function(){
-        fs.rmdirSync(resolve('./test/init/backup_paths'), {recursive: true});
-        fs.rmdirSync(resolve('./test/init/scripts'), {recursive: true});
-        fs.rmdirSync(resolve('./test/init/cron'), {recursive: true});
+
     })
 });
 

@@ -8,6 +8,7 @@ const readConfigList = require('./readConfigList.js');
 const readConfig = require('./readConfig.js');
 const createShellScript = require('./createShellScript.js');
 const fs = require('fs');
+const os = require('os');
 
 let default_sh_folder = './shell_scripts'
 default_sh_folder = path.resolve(default_sh_folder);
@@ -65,12 +66,20 @@ async function init (conf_list_path = default_conf_list_path, sh_folder = defaul
         return filename.value;
     })
 
-    // use cron_jobs to create a single cron file called cron_backup in /etc/cron.d
+    cron_jobs = cron_jobs.filter(Boolean);
+    cron_jobs = cron_jobs.map(job => {
+        return job.cron_schedule + ' root ' + job.script_path;
+    })
+
+
+    // use cron_jobs to create a single cron file called cron_backup in cron_folder
     // the cron file needs to have one cron entry for every object in cron_jobs.
-
-
-
-
+    try{
+        fs.writeFileSync(path.join(cron_folder, 'cron_backup'), cron_jobs.join(os.EOL));
+    }
+    catch (err) {
+        return Promise.reject(new Error(`Error writing cron file: ${err}`));
+    }
 
 
     // Use the conf_list to create watchers
