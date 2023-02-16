@@ -33,6 +33,9 @@ describe('init', function() {
         // Create a folder to store the shell scripts in
         let scripts_path = resolve('./test/init/scripts');
         fs.mkdirSync(scripts_path);
+        // Create a folder to store the cron file in
+        let cron_path = resolve('./test/init/cron');
+        fs.mkdirSync(cron_path);
     });
 
     it('should return an error if invalid conf list path is supplied', async function() {
@@ -43,8 +46,24 @@ describe('init', function() {
         }
     });
 
+    it('should return an error if invalid scripts path is supplied', async function() {
+        try{
+            await init(resolve('./test/init/sample_archive_conf.yml'), 'invalid/path');
+        } catch (err) {
+            assert.equal(err.message, 'Invalid shell script folder path: invalid/path');
+        }
+    });
+
+    it('should return an error if invalid cron folder is supplied', async function() {
+        try{
+            await init(resolve('./test/init/sample_archive_conf.yml'), resolve('./test/init/scripts'), 'invalid/path');
+        } catch (err) {
+            assert.equal(err.message, 'Invalid cron folder path: invalid/path');
+        }
+    });
+    
     it('should be able to create script files', async function() {
-        await init(resolve('./test/init/conf_list.yml'), resolve('./test/init/scripts'));
+        await init(resolve('./test/init/conf_list.yml'), resolve('./test/init/scripts'), resolve('./test/init/cron'));
         // Check that the script files were created
         let files = fs.readdirSync(resolve('./test/init/scripts'));
         assert.equal(files.length, 2);
@@ -53,6 +72,7 @@ describe('init', function() {
     after(function(){
         fs.rmdirSync(resolve('./test/init/backup_paths'), {recursive: true});
         fs.rmdirSync(resolve('./test/init/scripts'), {recursive: true});
+        fs.rmdirSync(resolve('./test/init/cron'), {recursive: true});
     })
 });
 
