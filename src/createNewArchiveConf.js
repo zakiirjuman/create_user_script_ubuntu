@@ -16,8 +16,6 @@ const username = process.argv[2];
 // Get the full destination_path of the archive
 let destination_path = process.argv[3];
 destination_path = path.resolve(destination_path);
-console.log('destination_path: ');
-console.log(destination_path);
 // The default location for the config file is /home/${username}/archive_confs/${archive_name}.yml
 // This location is saved as config_path.
 // The config_path can be specified as the fourth argument to this program.
@@ -42,13 +40,21 @@ const config = {
     cron_schedule
 };
 
+// Read the conf_list.yml file
+const conf_list_path = path.resolve(process.argv[5]) || `/home/${username}/archive_confs/conf_list.yml`;
+const conf_object = yaml.load(fs.readFileSync(conf_list_path, 'utf8'));
+
+
 // Check that we can write to the config_path   
 let config_path =  path.resolve(process.argv[4]) || `/home/${username}/archive_confs/${archive_name}.yml`;
-console.log('config_path: ');
-console.log(config_path);
+
+// If the config_path already exists in the conf_list, exit with an error
+if (conf_object.conf_list.includes(config_path)) {
+    console.error(`Configuration file already exists at ${config_path}`);
+    process.exit(1);
+}
 
 // Write the configuration object to the config_path   
-
 try { 
     fs.writeFileSync(config_path, yaml.dump(config));
 } catch (err) {
@@ -56,14 +62,9 @@ try {
     process.exit(1);
 }
 
-// Write the path of the configuration file to the conf_list.yml file
-const conf_list_path = path.resolve(process.argv[5]) || `/home/${username}/archive_confs/conf_list.yml`;
-console.log('conf_list_path: ');
-console.log(conf_list_path);
-const conf_object = yaml.load(fs.readFileSync(conf_list_path, 'utf8'));
-console.log('conf_object: ');
-console.log(conf_object);   
 conf_object.conf_list.push(config_path);
+
+// Write the path of the configuration file to the conf_list.yml file
 try{
     fs.writeFileSync(conf_list_path, yaml.dump(conf_object));
 }   catch (err) {
@@ -71,5 +72,5 @@ try{
     console.error(err);
     process.exit(1);    
 }
-console.log('Configuration file created successfully')
+console.log(`Created configuration file for ${username}'s archive: ${archive_name} at ${config_path}\nThe default schedule is every dat at 12:00 AM.\nThe default backup paths are: ${backup_paths}`)
 process.exit(0);
