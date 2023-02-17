@@ -5,10 +5,10 @@
 
 const path = require('path');
 const readConfigList = require('./readConfigList.js');
-const readConfig = require('./readConfig.js');
-const createShellScript = require('./createShellScript.js');
 const compareConfLists = require('./compareConfLists.js');
 const resolveNewConfs = require('./resolveNewConfs.js');
+const updateCronEntries = require('./updateCronEntries.js');
+const removeDuplicateDestinationPaths = require('./removeDuplicateDestinationPaths.js');
 
 const chokidar = require('chokidar');
 const fs = require('fs');
@@ -17,11 +17,8 @@ const os = require('os');
 let default_sh_folder = './shell_scripts'
 default_sh_folder = path.resolve(default_sh_folder);
 console.log(default_sh_folder);
-let counter = 0;
-
 
 const default_conf_list_path = process.argv[2];
-let current_watchers = [];
 
 async function init (conf_list_path = default_conf_list_path, sh_folder = default_sh_folder, cron_folder) {
     // Read the conf_list_path
@@ -52,13 +49,7 @@ async function init (conf_list_path = default_conf_list_path, sh_folder = defaul
     console.log(conf_list)
     let confFileWatcher = chokidar
         .watch(conf_list, { persistent: true })
-        .on('ready', () => {
-            console.log('Watching Configuration Files at:');
-            console.log(confFileWatcher.getWatched());    
-        })
         .on('change', async (changed_path) => {
-            counter++;
-            console.log(counter);
             console.log(`File ${changed_path} has been changed`);
             let watched_paths = confFileWatcher.getWatched();
             let watched_files = [];
@@ -70,11 +61,7 @@ async function init (conf_list_path = default_conf_list_path, sh_folder = defaul
                     watched_files.push(`${folder}/${file}`);
                 })
             }
-            console.log('watched files: ')
-            console.log(watched_files);
             let new_confs_resolved = await resolveNewConfs(watched_files, sh_folder);
-            console.log('new_confs_resolved: ');
-            console.log(new_confs_resolved);
             confs_resolved = removeDuplicateDestinationPaths(new_confs_resolved);
             console.log('confs_resolved: ');
             console.log(confs_resolved);
@@ -88,100 +75,58 @@ async function init (conf_list_path = default_conf_list_path, sh_folder = defaul
         .on('add', (changed_path) => {
             console.log(`Config File ${changed_path} is now being watched`);
         })
-        .on('unlink', (changed_path) => {
-            console.log(`Config File ${changed_path} is no longer being watched`);
-        })
     
 
     // Initialize the confListWatcher
     const confListWatcher = chokidar
-    .watch(conf_list_path, { persistent: true })
-    .on('ready', () => {
-        console.log('Configuration List being watched at:');
-        console.log(confListWatcher.getWatched());    
+        .watch(conf_list_path, { persistent: true })
+        .on('change', async (conf_list_path) => {
+            // Read the new conf_list
+            console.log('change detected')
+            // wrap readConfigList in a try catch block
+            let new_conf_list;
+            try {
+                new_conf_list = readConfigList(conf_list_path);
+            } catch (err) {
+                return Promise.reject(new Error(`Invalid conf list path: ${conf_list_path}`));
+            }
+            // Get the folders and files returned by confFileWatcher.getWatched()
+            let watched_paths = confFileWatcher.getWatched();
+            let watched_files = [];
+            //console.log(watched_paths);
+            // Each key of watched_paths represents a folder, and the value is an array of files in that folder
+            // Get the full location of each file in the watched_paths object
+            for (const [folder, files] of Object.entries(watched_paths)) {
+                files.forEach(file => {
+                    watched_files.push(`${folder}/${file}`);
+                })
+            }
+            // call compareConfLists to get the files that need to be added and removed
+            let {files_to_add, files_to_remove} = compareConfLists(new_conf_list, watched_files);
+
+            let new_confs_resolved = await resolveNewConfs(files_to_add, sh_folder);
+
+            //use files_to_remove to remove elements from confs_resolved
+            confs_resolved = confs_resolved.filter(conf => !files_to_remove.includes(conf.config_file_path));
+            //add new_confs_resolved to confs_resolved
+            confs_resolved = confs_resolved.concat(new_confs_resolved);
+            //remove elements from confs_resolved that have duplicate destination_paths do not keep any of the duplicates
+            confs_resolved = removeDuplicateDestinationPaths(confs_resolved);
+            console.log('confs_resolved: ');
+            console.log(confs_resolved);
+
+            //update cron_entries
+            updateCronEntries(confs_resolved, cron_folder);
+            console.log('updated cron entries');
+
+            try {
+                await confFileWatcher.unwatch(files_to_remove);
+                confFileWatcher.add(files_to_add);
+            } catch (err) {
+                console.log(`Error updating confFileWatcher: ${err}`);
+            }
+            console.log('updated watchers: ');
     })
-    .on('change', async (conf_list_path) => {
-        // Read the new conf_list
-        counter++;
-        console.log(counter);
-        console.log('change detected')
-        // wrap readConfigList in a try catch block
-        let new_conf_list;
-        try {
-            new_conf_list = readConfigList(conf_list_path);
-        } catch (err) {
-            return Promise.reject(new Error(`Invalid conf list path: ${conf_list_path}`));
-        }
-        // Get the folders and files returned by confFileWatcher.getWatched()
-        let watched_paths = confFileWatcher.getWatched();
-        let watched_files = [];
-        //console.log(watched_paths);
-        // Each key of watched_paths represents a folder, and the value is an array of files in that folder
-        // Get the full location of each file in the watched_paths object
-        for (const [folder, files] of Object.entries(watched_paths)) {
-            files.forEach(file => {
-                watched_files.push(`${folder}/${file}`);
-            })
-        }
-        console.log('watched files: ')
-        console.log(watched_files);
-        // call compareConfLists to get the files that need to be added and removed
-        let {files_to_add, files_to_remove} = compareConfLists(new_conf_list, watched_files);
-        console.log('files to add: ')
-        console.log(files_to_add);
-        console.log('files to remove:')
-        console.log(files_to_remove);
-
-        let new_confs_resolved = await resolveNewConfs(files_to_add, sh_folder);
-        console.log('files to add: ')
-        console.log(new_confs_resolved);
-
-        //use files_to_remove to remove elements from confs_resolved
-        confs_resolved = confs_resolved.filter(conf => !files_to_remove.includes(conf.config_file_path));
-        //add new_confs_resolved to confs_resolved
-        confs_resolved = confs_resolved.concat(new_confs_resolved);
-        //remove elements from confs_resolved that have duplicate destination_paths do not keep any of the duplicates
-        confs_resolved = removeDuplicateDestinationPaths(confs_resolved);
-        console.log('confs_resolved: ');
-        console.log(confs_resolved);
-
-
-        //update cron_entries
-        updateCronEntries(confs_resolved, cron_folder);
-        console.log('updated cron entries');
-
-        try {
-            await confFileWatcher.unwatch(files_to_remove);
-            confFileWatcher.add(files_to_add);
-        } catch (err) {
-            console.log(`Error updating confFileWatcher: ${err}`);
-        }
-        console.log('updated watchers: ');
-    })
-}
-
-function updateCronEntries(confs_resolved, cron_folder) {
-    let cron_entries = confs_resolved.map(conf => conf.cron_entry);
-    // use cron_entries to create a single cron file called cron_backup in cron_folder
-    // the cron file needs to have one cron entry for every object in cron_jobs.
-    try {
-        fs.writeFileSync(path.join(cron_folder, 'cron_backup'), cron_entries.join(os.EOL));
-    }
-    catch (err) {
-        return new Error(`Error writing cron file: ${err}`);
-    }       
-}
-
-function removeDuplicateDestinationPaths(confs_resolved) {
-    let destination_paths = confs_resolved.map(conf => conf.destination_path);
-    let unique_destination_paths = destination_paths.filter((dest_path, index, self) => {
-        return ((self.indexOf(dest_path) === index) && (self.lastIndexOf(dest_path) === index));
-    });
-    let unique_confs_resolved = unique_destination_paths.map(dest_path => {
-        return confs_resolved.find(conf => conf.destination_path === dest_path);    
-    })
-    console.log(unique_confs_resolved);
-    return unique_confs_resolved;
 }
 
 module.exports = init;

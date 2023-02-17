@@ -1,9 +1,7 @@
 // This async function is a refactor of part of the init file.
 
-// This program receives two arguments the first is the path to the list of config files, the other is the path to the default folder
-// that will hold the backup scripts.
-// This program will read the list and create a watch on each file.
-// If the list is modified, the program will read the new list and add or remove watchers as needed.
+// This function receives two arguments the first is the path to the list of config files, the other is 
+// the path to the default shell folder that will hold the backup scripts.
 
 const readConfig = require('./readConfig.js');
 const createShellScript = require('./createShellScript.js');
