@@ -35,7 +35,7 @@ async function createShellScript(config = {}, shell_script_folder) {
     let script_path = `${shell_script_folder}/${archive_name}`;
     let cron_entry = cron_schedule + ' root ' + script_path;
     return writeFile(`${shell_script_folder}/${archive_name}`, shell_script).then(() => {
-        return {script_path, cron_entry, ...config};
+        return {script_path, cron_entry, destination_path, ...config};
     });
 }
 
