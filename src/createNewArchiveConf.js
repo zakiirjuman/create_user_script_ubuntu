@@ -14,8 +14,8 @@ const path = require('path');
 // Get the username of the configuration file
 const username = process.argv[2];
 // Get the full destination_path of the archive
-let destination_path = process.argv[3];
-destination_path = path.resolve(destination_path);
+//console.log(process.argv[3])
+let destination_path = path.resolve(process.argv[3] || `/home/${username}/default_archive.tar.gz`)
 // The default location for the config file is /home/${username}/archive_confs/${archive_name}.yml
 // This location is saved as config_path.
 // The config_path can be specified as the fourth argument to this program.
@@ -23,6 +23,21 @@ const {archive_name, archive_extension} = pullExtension(destination_path);
 // The archive_destination is the directory where the archive is stored
 const archive_destination = path.dirname(destination_path);
 // The archive_extension is the extension of the archive
+
+const defaults = {
+    conf_list_path: `/archive_data/conf_list.yml`,
+    config_path: `/home/${username}/archive_confs/${archive_name}.yml`
+}
+
+// Create the archive_destination (folder) if it does not exist
+if (!fs.existsSync(archive_destination)){
+    fs.mkdirSync(archive_destination, { recursive: true });
+}
+
+// Create the (default) archive_confs folder if it does not exist
+if(!fs.existsSync(`/home/${username}/archive_confs`)){
+    fs.mkdirSync(`/home/${username}/archive_confs`, { recursive: true });
+}
 
 // Define the default backup_paths array
 const backup_paths = [`/home/${username}`];
@@ -40,12 +55,14 @@ const config = {
 };
 
 // Read the conf_list.yml file
-const conf_list_path = path.resolve(process.argv[5]) || `/home/${username}/archive_confs/conf_list.yml`;
-const conf_object = yaml.load(fs.readFileSync(conf_list_path, 'utf8'));
+const conf_list_path = path.resolve(process.argv[5] || defaults.conf_list_path )
+let conf_object = yaml.load(fs.readFileSync(conf_list_path, 'utf8'));
 
+if (!conf_object || !conf_object.conf_list){
+    conf_object = {conf_list: []}
+}
 
-// Check that we can write to the config_path   
-let config_path =  path.resolve(process.argv[4]) || `/home/${username}/archive_confs/${archive_name}.yml`;
+let config_path = path.resolve(process.argv[4] || defaults.config_path )
 
 // If the config_path already exists in the conf_list, exit with an error
 if (conf_object.conf_list.includes(config_path)) {
