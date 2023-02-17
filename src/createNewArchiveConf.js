@@ -19,11 +19,10 @@ destination_path = path.resolve(destination_path);
 // The default location for the config file is /home/${username}/archive_confs/${archive_name}.yml
 // This location is saved as config_path.
 // The config_path can be specified as the fourth argument to this program.
-const archive_name = path.basename(destination_path, path.extname(destination_path));
+const {archive_name, archive_extension} = pullExtension(destination_path);
 // The archive_destination is the directory where the archive is stored
 const archive_destination = path.dirname(destination_path);
 // The archive_extension is the extension of the archive
-const archive_extension = path.extname(destination_path);
 
 // Define the default backup_paths array
 const backup_paths = [`/home/${username}`];
@@ -74,3 +73,13 @@ try{
 }
 console.log(`Created configuration file for ${username}'s archive: ${archive_name} at ${config_path}\nThe default schedule is every dat at 12:00 AM.\nThe default backup paths are: ${backup_paths}`)
 process.exit(0);
+
+function pullExtension(destination_path){
+    let archive_extension = '';
+    let archive_name = destination_path;
+    while (archive_name.includes('.')){
+        archive_extension = path.extname(archive_name) + archive_extension;
+        archive_name = path.basename(destination_path, archive_extension);
+    }
+    return {archive_name, archive_extension}
+}
