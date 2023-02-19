@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 // This program creates a new archive configuration file
 // It takes the username, and full destination_path as arguments.
 // The destination_path is broken down into the archive_destination, archive_name and archive_extension.

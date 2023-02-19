@@ -1,3 +1,6 @@
+#!/usr/bin/env node
+
+
 // This script takes two arguments, the first is the path of the folder or file that is to be added to the backup_paths
 // array, and the second is the path of the configuration file.
 
