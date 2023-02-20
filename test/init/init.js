@@ -13,7 +13,7 @@ let fs = require('fs');
 describe('init', function() {  
     before(function() {
         fs.rmdirSync(resolve('./test/init/backup_paths'), {recursive: true});
-        fs.rmdirSync(resolve('./test/init/scripts'), {recursive: true});
+        fs.rmdirSync(resolve('./test/init/scripts/ubuntu'), {recursive: true});
         fs.rmdirSync(resolve('./test/init/cron'), {recursive: true});
         // Artificially create backup paths to work with:
         //  - Create a folder in test/init called backup_paths
@@ -34,11 +34,11 @@ describe('init', function() {
         config.backup_paths = backup_paths;
         fs.writeFileSync(resolve('./test/init/sample_archive_conf.yml'), yaml.dump(config));
         // Create a folder to store the shell scripts in
-        let scripts_path = resolve('./test/init/scripts');
-        fs.mkdirSync(scripts_path);
+        let scripts_path = resolve('./test/init/scripts/ubuntu');
+        fs.mkdirSync(scripts_path, {recursive: true});
         // Create a folder to store the cron file in
         let cron_path = resolve('./test/init/cron');
-        fs.mkdirSync(cron_path);
+        fs.mkdirSync(cron_path, {recursive: true});
     });
 
     it('should return an error if invalid conf list path is supplied', async function() {
@@ -68,7 +68,7 @@ describe('init', function() {
     it('should be able to create script files and cron file', async function() {
         await init(resolve('./test/init/conf_list.yml'), resolve('./test/init/scripts'), resolve('./test/init/cron'));
         // Check that the script files were created
-        let files = fs.readdirSync(resolve('./test/init/scripts'));
+        let files = fs.readdirSync(resolve('./test/init/scripts/ubuntu'));
         assert.equal(files.length, 2);
         // Check that the cron file was created
         let cron_files = fs.readdirSync(resolve('./test/init/cron'));

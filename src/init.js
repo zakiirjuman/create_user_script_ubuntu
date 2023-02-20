@@ -138,6 +138,6 @@ async function init (conf_list_path = default_conf_list_path, sh_folder = defaul
     })
 }
 
-init();
+//init();
 
 module.exports = init;

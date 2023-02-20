@@ -32,9 +32,9 @@ async function createShellScript(config = {}, shell_script_folder) {
     let shell_script = `#!/bin/bash\ntar -czf ${destination_path} ${backup_paths_string}\nchown ${username}:${username} ${destination_path}`;
 
     // Write the shell script to a file and return the script_path and cron_schedule
-    let script_path = `${shell_script_folder}/${archive_name}`;
+    let script_path = `${shell_script_folder}/${username}/${archive_name}`;
     let cron_entry = cron_schedule + ' root ' + script_path;
-    return writeFile(`${shell_script_folder}/${archive_name}`, shell_script).then(() => {
+    return writeFile(`${script_path}`, shell_script).then(() => {
         return {script_path, cron_entry, destination_path, ...config};
     });
 }
