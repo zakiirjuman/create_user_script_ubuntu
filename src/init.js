@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 // This program receives two arguments the first is the path to the list of config files, the other is the path to the default folder
 // that will hold the backup scripts.
 // This program will read the list and create a watch on each file.
@@ -14,26 +16,38 @@ const chokidar = require('chokidar');
 const fs = require('fs');
 const os = require('os');
 
-let default_sh_folder = './shell_scripts'
+let default_sh_folder = '/archive_scripts'
+let default_cron_folder = '/etc/cron.f'
+let default_conf_list_path = '/archive_data/conf_list.yml'
 default_sh_folder = path.resolve(default_sh_folder);
 console.log(default_sh_folder);
 
-const default_conf_list_path = process.argv[2];
+default_conf_list_path = path.resolve(process.argv[2] || default_conf_list_path);
+console.log('default_conf_list_path: ');
+console.log(default_conf_list_path);
 
-async function init (conf_list_path = default_conf_list_path, sh_folder = default_sh_folder, cron_folder) {
+if (!fs.existsSync(default_conf_list_path)) {
+    console.log(`Invalid conf list path: ${default_conf_list_path}`)
+    process.exit(1);
+}
+
+async function init (conf_list_path = default_conf_list_path, sh_folder = default_sh_folder, cron_folder = default_cron_folder) {
     // Read the conf_list_path
     let conf_list;
     try{
         conf_list = readConfigList(conf_list_path);
     } catch (err) {
+        console.log(`Invalid conf list path: ${conf_list_path}`)
         return Promise.reject(new Error(`Invalid conf list path: ${conf_list_path}`));
     }
 
     //Reject with error if sh_folder or cron_folder are not valid paths
     if (!fs.existsSync(sh_folder)) {
+        console.log(`Invalid shell script folder path: ${sh_folder}`)
         return Promise.reject(new Error(`Invalid shell script folder path: ${sh_folder}`));
     }
     if (!fs.existsSync(cron_folder)) {
+        console.log(`Invalid shell script folder path: ${cron_folder}`)
         return Promise.reject(new Error(`Invalid cron folder path: ${cron_folder}`));
     }
 
@@ -128,5 +142,7 @@ async function init (conf_list_path = default_conf_list_path, sh_folder = defaul
             console.log('updated watchers: ');
     })
 }
+
+init();
 
 module.exports = init;

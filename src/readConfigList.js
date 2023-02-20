@@ -7,9 +7,10 @@ const resolve = require('path').resolve;
 
 function readConfigList(conf_list_path) {
 
+    console.log('reading');
     // Check if conf_list_path exists
     if (!fs.existsSync(conf_list_path)) {
-        //console.log('conf_list_path does not exist');
+        console.log('conf_list_path does not exist');
         throw new Error('conf_list_path does not exist');
     }
 

@@ -8,6 +8,11 @@ const createShellScript = require('./createShellScript.js');
 
 async function resolveNewConfs (conf_list, sh_folder) {
 
+    console.log('conf_list: ')
+    console.log(conf_list);
+    console.log('sh_folder: ')
+    console.log(sh_folder);
+    
     // For each element in the conf_list, use readConfig to read the file and create an array with all of the config objects
     let confs = [];
     conf_list.forEach(conf => {
@@ -20,6 +25,8 @@ async function resolveNewConfs (conf_list, sh_folder) {
         }
         return conf.value;
     })
+    console.log('confs_resolved: ')
+    console.log(confs_resolved);
     confs_resolved = confs_resolved.filter(Boolean);
     
     // Use the confs_resolved to createShellScripts
@@ -37,7 +44,8 @@ async function resolveNewConfs (conf_list, sh_folder) {
         }
         return filename.value;
     })
-
+    console.log('confs_resolved: ')
+    console.log(confs_resolved);
     return confs_resolved = confs_resolved.filter(Boolean);    
 }
 

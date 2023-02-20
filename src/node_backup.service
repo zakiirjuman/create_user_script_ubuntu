@@ -1,0 +1,9 @@
+[Unit]
+Description=Node Backup
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/node_backup /archive_data/conf_list.yml
+
+[Install]
+WantedBy=multi-user.target

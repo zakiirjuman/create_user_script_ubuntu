@@ -60,14 +60,14 @@ const config = {
 const conf_list_path = path.resolve(process.argv[5] || defaults.conf_list_path )
 let conf_object = yaml.load(fs.readFileSync(conf_list_path, 'utf8'));
 
-if (!conf_object || !conf_object.conf_list){
-    conf_object = {conf_list: []}
+if (!conf_object || !conf_object.conf_path){
+    conf_object = {conf_path: []}
 }
 
 let config_path = path.resolve(process.argv[4] || defaults.config_path )
 
 // If the config_path already exists in the conf_list, exit with an error
-if (conf_object.conf_list.includes(config_path)) {
+if (conf_object.conf_path.includes(config_path)) {
     console.error(`Configuration file already exists at ${config_path}`);
     process.exit(1);
 }
@@ -80,7 +80,7 @@ try {
     process.exit(1);
 }
 
-conf_object.conf_list.push(config_path);
+conf_object.conf_path.push(config_path);
 
 // Write the path of the configuration file to the conf_list.yml file
 try{
