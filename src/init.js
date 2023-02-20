@@ -50,8 +50,6 @@ async function init (conf_list_path = default_conf_list_path, sh_folder = defaul
 
     let confs_resolved = await resolveNewConfs(conf_list, sh_folder);
     confs_resolved = removeDuplicateDestinationPaths(confs_resolved);
-    console.log('confs_resolved: ')
-    console.log(confs_resolved);
     updateCronEntries(confs_resolved, cron_folder);
 
     // Use the conf_list to create watchers

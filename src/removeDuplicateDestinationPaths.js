@@ -5,8 +5,7 @@ function removeDuplicateDestinationPaths(confs_resolved) {
     });
     let confs_resolved_no_duplicates = unique_destination_paths.map(dest_path => {
         return confs_resolved.find(conf => conf.destination_path === dest_path);    
-    })
-    console.log(confs_resolved_no_duplicates);
+    });
     return confs_resolved_no_duplicates;
 }
 
