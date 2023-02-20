@@ -26,11 +26,6 @@ default_conf_list_path = path.resolve(process.argv[2] || default_conf_list_path)
 console.log('default_conf_list_path: ');
 console.log(default_conf_list_path);
 
-if (!fs.existsSync(default_conf_list_path)) {
-    console.log(`Invalid conf list path: ${default_conf_list_path}`)
-    process.exit(1);
-}
-
 async function init (conf_list_path = default_conf_list_path, sh_folder = default_sh_folder, cron_folder = default_cron_folder) {
     // Read the conf_list_path
     let conf_list;
