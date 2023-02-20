@@ -10,6 +10,7 @@ function updateCronEntries(confs_resolved, cron_folder) {
         fs.writeFileSync(path.join(cron_folder, 'cron_backup'), cron_entries.join(os.EOL));
     }
     catch (err) {
+        console.log(`Error writing cron file: ${err}`);
         return new Error(`Error writing cron file: ${err}`);
     }       
 }

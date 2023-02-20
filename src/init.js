@@ -17,7 +17,7 @@ const fs = require('fs');
 const os = require('os');
 
 let default_sh_folder = '/archive_scripts'
-let default_cron_folder = '/etc/cron.f'
+let default_cron_folder = '/etc/cron.d'
 let default_conf_list_path = '/archive_data/conf_list.yml'
 default_sh_folder = path.resolve(default_sh_folder);
 console.log(default_sh_folder);
@@ -27,6 +27,15 @@ console.log('default_conf_list_path: ');
 console.log(default_conf_list_path);
 
 async function init (conf_list_path = default_conf_list_path, sh_folder = default_sh_folder, cron_folder = default_cron_folder) {
+
+    // Create cron_folder if it does not exist
+    if (!fs.existsSync(cron_folder)) {
+        fs.mkdirSync(cron_folder, { recursive: true });
+        // create the cron file
+        fs.writeFileSync(path.join(cron_folder, 'cron_backup'), '');
+    }
+
+
     // Read the conf_list_path
     let conf_list;
     try{
@@ -138,6 +147,6 @@ async function init (conf_list_path = default_conf_list_path, sh_folder = defaul
     })
 }
 
-//init();
+init();
 
 module.exports = init;

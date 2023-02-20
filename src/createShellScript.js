@@ -33,6 +33,13 @@ async function createShellScript(config = {}, shell_script_folder) {
 
     // Write the shell script to a file and return the script_path and cron_schedule
     let script_path = `${shell_script_folder}/${username}/${archive_name}`;
+
+    // Create script folder if it does not exist
+    try {
+        await fs.promises.access(`${shell_script_folder}/${username}`);
+    } catch (err) {
+        await fs.promises.mkdir(`${shell_script_folder}/${username}`, {recursive: true});
+    }
     let cron_entry = cron_schedule + ' root ' + script_path;
     return writeFile(`${script_path}`, shell_script).then(() => {
         return {script_path, cron_entry, destination_path, ...config};
