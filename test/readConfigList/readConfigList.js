@@ -23,4 +23,18 @@ describe('readConfigList', () => {
         // Compare the actual output to the expected output
         assert.deepEqual(actual_output, expected_output);
     });
+
+    it.skip('should return an empty array if the conf_list_path does not exist', () => {
+        // Define the conf_list_path
+        const conf_list_path = `${this_dir}/nonexistent.yml`;
+
+        // Define the expected output
+        const expected_output = [];
+
+        // Call the function
+        const actual_output = readConfigList(conf_list_path);
+
+        // Compare the actual output to the expected output
+        assert.deepEqual(actual_output, expected_output);
+    })
 });

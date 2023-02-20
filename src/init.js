@@ -28,19 +28,12 @@ console.log(default_conf_list_path);
 
 async function init (conf_list_path = default_conf_list_path, sh_folder = default_sh_folder, cron_folder = default_cron_folder) {
 
-    // Create cron_folder if it does not exist
-    if (!fs.existsSync(cron_folder)) {
-        fs.mkdirSync(cron_folder, { recursive: true });
-        // create the cron file
-        fs.writeFileSync(path.join(cron_folder, 'cron_backup'), '');
-    }
-
-
     // Read the conf_list_path
     let conf_list;
     try{
         conf_list = readConfigList(conf_list_path);
     } catch (err) {
+        console.log(err)
         console.log(`Invalid conf list path: ${conf_list_path}`)
         return Promise.reject(new Error(`Invalid conf list path: ${conf_list_path}`));
     }
@@ -66,7 +59,7 @@ async function init (conf_list_path = default_conf_list_path, sh_folder = defaul
     conf_list = confs_resolved.map(conf => conf.config_file_path)
     console.log(conf_list)
     let confFileWatcher = chokidar
-        .watch(conf_list, { persistent: true })
+        .watch(conf_list, { persistent: true, awaitWriteFinish: true })
         .on('change', async (changed_path) => {
             console.log(`File ${changed_path} has been changed`);
             let watched_paths = confFileWatcher.getWatched();
@@ -97,10 +90,12 @@ async function init (conf_list_path = default_conf_list_path, sh_folder = defaul
 
     // Initialize the confListWatcher
     const confListWatcher = chokidar
-        .watch(conf_list_path, { persistent: true })
+        .watch(conf_list_path, { persistent: true, awaitWriteFinish: true })
         .on('change', async (conf_list_path) => {
             // Read the new conf_list
+
             console.log('change detected')
+
             // wrap readConfigList in a try catch block
             let new_conf_list;
             try {

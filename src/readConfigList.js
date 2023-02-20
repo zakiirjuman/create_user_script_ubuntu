@@ -7,7 +7,9 @@ const resolve = require('path').resolve;
 
 function readConfigList(conf_list_path) {
 
-    console.log('reading');
+    var valid_conf_list = [];
+    var conf_path = [];
+    console.log('reading: ' + conf_list_path + '...');
     // Check if conf_list_path exists
     if (!fs.existsSync(conf_list_path)) {
         console.log('conf_list_path does not exist');
@@ -15,10 +17,16 @@ function readConfigList(conf_list_path) {
     }
 
     // Read the conf_paths into an array
-    var {conf_path} = yaml.load(fs.readFileSync(conf_list_path, 'utf8'));
+    var object = yaml.load(fs.readFileSync(conf_list_path, 'utf8'));
+    if (!object || !object.conf_path) {
+        console.log('conf_list_path does not contain conf_paths');
+        return valid_conf_list;
+    } else {
+        conf_path = object.conf_path;
+    }
 
     // Test if each element is a valid path, return only valid paths.
-    var valid_conf_list = [];
+    
     for (i in conf_path) {
         if (fs.existsSync(resolve(conf_path[i]))) {
             valid_conf_list.push(resolve(conf_path[i]));
