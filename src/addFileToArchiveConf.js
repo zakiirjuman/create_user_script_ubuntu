@@ -28,7 +28,7 @@ config.backup_paths.push(backup_path);
 config.backup_paths = [...new Set(config.backup_paths)];
 
 // Write the configuration file
-fs.writeFileSync(config_path, yaml.dump(config));
+fs.writeFileSync(config_path, yaml.dump(config, {forceQuotes: true, quotingType: '"'}));
 
 // Print the path of the configuration file
 console.log("Configuration written to " + config_path);

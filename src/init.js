@@ -57,7 +57,14 @@ async function init (conf_list_path = default_conf_list_path, sh_folder = defaul
     conf_list = confs_resolved.map(conf => conf.config_file_path)
     console.log(conf_list)
     let confFileWatcher = chokidar
-        .watch(conf_list, { persistent: true, awaitWriteFinish: true })
+        .watch(conf_list, { persistent: true, usePolling: true, interval: 1000, binaryInterval: 1000, ignoreInitial: true})
+        .on('ready', () => {
+            console.log('Watching Configuration Files at:');
+            console.log(confFileWatcher.getWatched());    
+        })
+        .on('unlink', async (removed_path) => {
+            console.log(`File ${removed_path} has been removed`);
+        })
         .on('change', async (changed_path) => {
             console.log(`File ${changed_path} has been changed`);
             let watched_paths = confFileWatcher.getWatched();
@@ -70,7 +77,13 @@ async function init (conf_list_path = default_conf_list_path, sh_folder = defaul
                     watched_files.push(`${folder}/${file}`);
                 })
             }
-            let new_confs_resolved = await resolveNewConfs(watched_files, sh_folder);
+            let new_confs_resolved;
+            try{
+                new_confs_resolved = await resolveNewConfs(watched_files, sh_folder);
+            } catch (err) {
+                //console.log(err);
+                return Promise.reject(new Error(`Error with configuration: ${err}`));
+            }
             confs_resolved = removeDuplicateDestinationPaths(new_confs_resolved);
             console.log('confs_resolved: ');
             console.log(confs_resolved);
@@ -88,7 +101,11 @@ async function init (conf_list_path = default_conf_list_path, sh_folder = defaul
 
     // Initialize the confListWatcher
     const confListWatcher = chokidar
-        .watch(conf_list_path, { persistent: true, awaitWriteFinish: true })
+        .watch(conf_list_path, { persistent: true, usePolling: true, interval: 1000, binaryInterval: 1000, ignoreInitial: true})
+        .on('ready', () => {
+            console.log('Configuration List being watched at:');
+            console.log(confListWatcher.getWatched());    
+        })
         .on('change', async (conf_list_path) => {
             // Read the new conf_list
 
@@ -115,8 +132,13 @@ async function init (conf_list_path = default_conf_list_path, sh_folder = defaul
             // call compareConfLists to get the files that need to be added and removed
             let {files_to_add, files_to_remove} = compareConfLists(new_conf_list, watched_files);
 
-            let new_confs_resolved = await resolveNewConfs(files_to_add, sh_folder);
-
+            let new_confs_resolved;
+            try{
+                new_confs_resolved = await resolveNewConfs(files_to_add, sh_folder);
+            } catch (err) {
+                //console.log(err);
+                return Promise.reject(new Error(`Error with configuration: ${err}`));
+            }
             //use files_to_remove to remove elements from confs_resolved
             confs_resolved = confs_resolved.filter(conf => !files_to_remove.includes(conf.config_file_path));
             //add new_confs_resolved to confs_resolved

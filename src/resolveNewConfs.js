@@ -16,6 +16,7 @@ async function resolveNewConfs (conf_list, sh_folder) {
     let confs_resolved = await Promise.allSettled(confs);
     confs_resolved = confs_resolved.map(conf => {
         if (conf.status === 'rejected') {
+            console.log(conf.reason)
             return null;
         }
         return conf.value;

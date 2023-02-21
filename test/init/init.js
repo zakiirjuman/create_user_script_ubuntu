@@ -32,7 +32,7 @@ describe('init', function() {
         //console.log(backup_paths)
         let config = yaml.load(fs.readFileSync(resolve('./test/init/sample_archive_conf.yml'), 'utf8'));
         config.backup_paths = backup_paths;
-        fs.writeFileSync(resolve('./test/init/sample_archive_conf.yml'), yaml.dump(config));
+        fs.writeFileSync(resolve('./test/init/sample_archive_conf.yml'), yaml.dump(config, {forceQuotes: true, quotingType: '"'}));
         // Create a folder to store the shell scripts in
         let scripts_path = resolve('./test/init/scripts/ubuntu');
         fs.mkdirSync(scripts_path, {recursive: true});

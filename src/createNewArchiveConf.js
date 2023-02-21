@@ -74,7 +74,7 @@ if (conf_object.conf_path.includes(config_path)) {
 
 // Write the configuration object to the config_path   
 try { 
-    fs.writeFileSync(config_path, yaml.dump(config));
+    fs.writeFileSync(config_path, yaml.dump(config, {forceQuotes: true, quotingType: '"'}));
 } catch (err) {
     console.error(`Cannot write to ${config_path}`);
     process.exit(1);
@@ -84,7 +84,7 @@ conf_object.conf_path.push(config_path);
 
 // Write the path of the configuration file to the conf_list.yml file
 try{
-    fs.writeFileSync(conf_list_path, yaml.dump(conf_object));
+    fs.writeFileSync(conf_list_path, yaml.dump(conf_object, {forceQuotes: true, quotingType: '"'}));
 }   catch (err) {
     console.error(`Cannot write to ${conf_list_path}`);
     console.error(err);
