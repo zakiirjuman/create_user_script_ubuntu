@@ -1,3 +1,4 @@
 node_modules
 /test/init/cron
 /test/init/scripts
+/src/commands to test.txt

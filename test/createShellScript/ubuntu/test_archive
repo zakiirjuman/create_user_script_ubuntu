@@ -1,3 +1,3 @@
 #!/bin/bash
-tar -czf /backups/ubuntu/test_archive.tar.gz /home/ubuntu/test1 /home/ubuntu/test2
+tar -czf /backups/ubuntu/test_archive.tar.gz -P /home/ubuntu/test1 -P /home/ubuntu/test2
 chown ubuntu:ubuntu /backups/ubuntu/test_archive.tar.gz

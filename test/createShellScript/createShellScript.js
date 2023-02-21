@@ -24,9 +24,17 @@ let config = {
 let shell_script_folder = this_dir;
 
 // Define the expected shell script
-let expected_shell_script = `#!/bin/bash\ntar -czf /backups/ubuntu/test_archive.tar.gz /home/ubuntu/test1 /home/ubuntu/test2\nchown ubuntu:ubuntu /backups/ubuntu/test_archive.tar.gz`
+let expected_shell_script = `#!/bin/bash\ntar -czf /backups/ubuntu/test_archive.tar.gz -P /home/ubuntu/test1 -P /home/ubuntu/test2\nchown ubuntu:ubuntu /backups/ubuntu/test_archive.tar.gz\n`
 
 describe('createShellScript', function() {
+
+        before('remove the shell script folder of the user', async function() {
+            try {
+                await fs.promises.rmdir(`${shell_script_folder}/ubuntu`, {recursive: true});
+            } catch (err) {
+                // Ignore error
+            }
+        });
     
         it('should create a shell script and return an object that contains the script_path and cron_schedule', async function() {
             let {script_path, cron_schedule, cron_entry} = await createShellScript(config, shell_script_folder);
