@@ -26,10 +26,10 @@ async function createShellScript(config = {}, shell_script_folder) {
 
     // Define the variables
     let destination_path = `${archive_destination}/${archive_name}${archive_extension}`;
-    let backup_paths_string = backup_paths.join(' ');
+    let backup_paths_string = backup_paths.join(' -P ');
 
     // Define the shell script
-    let shell_script = `#!/bin/bash\ntar -czf ${destination_path} ${backup_paths_string}\nchown ${username}:${username} ${destination_path}`;
+    let shell_script = `#!/bin/bash\ntar -czf ${destination_path} -P ${backup_paths_string}\nchown ${username}:${username} ${destination_path}\n`;
 
     // Write the shell script to a file and return the script_path and cron_schedule
     let script_path = `${shell_script_folder}/${username}/${archive_name}`;
@@ -41,9 +41,14 @@ async function createShellScript(config = {}, shell_script_folder) {
         await fs.promises.mkdir(`${shell_script_folder}/${username}`, {recursive: true});
     }
     let cron_entry = cron_schedule + ' root ' + script_path;
-    return writeFile(`${script_path}`, shell_script).then(() => {
+    return writeFile(`${script_path}`, shell_script)
+    .then(() => {
+        return fs.promises.chmod(script_path, '755');
+    })
+    .then(() => {
         return {script_path, cron_entry, destination_path, ...config};
     });
+
 }
 
 module.exports = createShellScript;

@@ -7,7 +7,7 @@ function updateCronEntries(confs_resolved, cron_folder) {
     // use cron_entries to create a single cron file called cron_backup in cron_folder
     // the cron file needs to have one cron entry for every object in cron_jobs.
     try {
-        fs.writeFileSync(path.join(cron_folder, 'cron_backup'), cron_entries.join(os.EOL));
+        fs.writeFileSync(path.join(cron_folder, 'cron_backup'), cron_entries.join(os.EOL) + os.EOL);
     }
     catch (err) {
         console.log(`Error writing cron file: ${err}`);
