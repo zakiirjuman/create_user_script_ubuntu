@@ -4,6 +4,8 @@ Description=Node Backup
 [Service]
 Type=simple
 ExecStart=/usr/local/bin/node_backup /archive_data/conf_list.yml
+StandardOutput=file:/var/log/node_backup.log
+StandardError=file:/var/log/node_backup.log
 
 [Install]
 WantedBy=multi-user.target
