@@ -24,6 +24,13 @@ async function read_config(config_file_path) {
 
 // This function checks if the backup paths exist
 function check_backup_paths(backup_paths) {
+    if(!backup_paths){
+        return false;
+    }
+    // if backup paths is an array and empty return false
+    if (Array.isArray(backup_paths) && backup_paths.length === 0) {
+        return false;
+    }
     for (var i = 0; i < backup_paths.length; i++) {
         if (!fs.existsSync(backup_paths[i])) {
             console.log('backup path does not exist');

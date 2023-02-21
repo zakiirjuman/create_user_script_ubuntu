@@ -54,7 +54,6 @@ async function init (conf_list_path = default_conf_list_path, sh_folder = defaul
 
     // Use the conf_list to create watchers
     console.log('Conf_list:')
-    conf_list = confs_resolved.map(conf => conf.config_file_path)
     console.log(conf_list)
     let confFileWatcher = chokidar
         .watch(conf_list, { persistent: true, usePolling: true, interval: 1000, binaryInterval: 1000, ignoreInitial: true})
