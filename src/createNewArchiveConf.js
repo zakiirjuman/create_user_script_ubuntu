@@ -78,6 +78,7 @@ try {
     //change file owner to the user
     fs.chownSync(config_path, config.username, config.username);
 } catch (err) {
+    console.log(err);
     console.error(`Cannot write to ${config_path}`);
     process.exit(1);
 }
