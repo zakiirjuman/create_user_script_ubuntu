@@ -20,7 +20,7 @@ fi
 
 mkdir -p "${project_path}/${project_name}/src"
 mkdir -p "${project_path}/${project_name}/config"
-touch "${project_path}/${project_nameqq}/README.md"
+touch "${project_path}/${project_name}/README.md"
 
 
 echo "Script executed successfully."

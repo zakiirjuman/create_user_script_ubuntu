@@ -20,7 +20,7 @@ describe('readConfig', function() {
         let { backup_paths, archive_extension, archive_destination, username, cron_schedule } = config_output;
         //assert.equal(backup_paths, config.backup_paths);
         assert.equal(archive_extension, '.tar.gz');
-        assert.equal(archive_destination, '/backups/ubuntu');
+        assert.equal(archive_destination, "test/readConfig/archive_destination");
         assert.equal(username, 'ubuntu');
     });
 
