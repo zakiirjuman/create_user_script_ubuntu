@@ -4,5 +4,5 @@ username: ubuntu
 backup_paths:
   - /home/ubuntu/ubuntu_scripts/test/init/backup_paths/test_file.txt
   - /home/ubuntu/ubuntu_scripts/test/init/backup_paths/test_file3.txt
-archive_destination: "test/init/backup_destination/"
+archive_destination: "test/init/archive_destination"
 cron_schedule: 0 0 0 * *

@@ -6,5 +6,5 @@ archive_extension: .tar.gz
 username: ishouldfail
 backup_paths:
   - /home/ubuntu
-archive_destination: /backups/ubuntu
+archive_destination: "test/readConfig/archive_destination"
 cron_schedule: "0 0 0 * *"

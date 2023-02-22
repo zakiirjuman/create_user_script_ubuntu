@@ -6,5 +6,5 @@ archive_extension: .fail
 username: ubuntu
 backup_paths:
   - /home/ubuntu
-archive_destination: /backups/ishouldfail
+archive_destination: "test/readConfig/archive_destination"
 cron_schedule: "0 0 0 * *"
