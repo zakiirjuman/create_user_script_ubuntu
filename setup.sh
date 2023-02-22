@@ -1,5 +1,6 @@
 #!/bin/bash
 
+chmod +x /home/ubuntu
 rm -r /archive_data
 rm -r /archive_scripts
 mkdir /archive_data
@@ -14,6 +15,7 @@ chmod o+rwx /archive_data/conf_list.yml
 #chmod +x src/createNewArchiveConf.js
 # get present working directory
 PWD=$(pwd)
+cp ${PWD}/src/node_backup.service /etc/systemd/system/node_backup.service
 ln -s ${PWD}/src/init.js /usr/local/bin/node_backup
 ln -s ${PWD}/src/addFileToArchiveConf.js /usr/local/bin/add_to_archive
 ln -s ${PWD}/src/createNewArchiveConf.js /usr/local/bin/create_archive
