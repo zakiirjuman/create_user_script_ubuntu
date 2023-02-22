@@ -1,7 +1,0 @@
-archive_name: here.tar
-archive_extension: .gz
-archive_destination: /home/ubuntu/ubuntu_scripts/test/createNewArchiveConf
-backup_paths:
-  - /home/ubuntu
-username: ubuntu
-cron_schedule: 0 0 * * *
