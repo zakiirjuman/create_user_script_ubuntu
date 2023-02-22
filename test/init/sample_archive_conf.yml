@@ -6,5 +6,5 @@ backup_paths:
   - "/home/ubuntu/ubuntu_scripts/test/init/backup_paths/test_file2.txt"
   - "/home/ubuntu/ubuntu_scripts/test/init/backup_paths/test_file3.txt"
   - "/home/ubuntu/ubuntu_scripts/test/init/backup_paths/test_file4.txt"
-archive_destination: "/backups/ubuntu"
+archive_destination: "test/init/backup_destination/"
 cron_schedule: "0 0 0 * 0"
