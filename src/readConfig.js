@@ -5,6 +5,7 @@ const util = require('util');
 const fs = require('fs');
 const yaml = require('js-yaml');
 const exec = util.promisify(require('child_process').exec);
+const path = require('path');
 
 async function read_config(config_file_path) {
 
@@ -65,10 +66,11 @@ async function check_username(username) {
 
 // This function checks if the archive destination is valid
 function check_archive_destination(archive_destination) {
-    if (fs.existsSync(archive_destination)) {
+    if (fs.existsSync(path.resolve(archive_destination))) {
         return true;
     } else {
         console.log('archive destination does not exist');
+        console.log(`path: ${path.resolve(archive_destination)}`)
         return false;
     }
 }
