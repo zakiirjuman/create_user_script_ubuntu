@@ -75,6 +75,8 @@ if (conf_object.conf_path.includes(config_path)) {
 // Write the configuration object to the config_path   
 try { 
     fs.writeFileSync(config_path, yaml.dump(config, {forceQuotes: true, quotingType: '"'}));
+    //change file owner to the user
+    fs.chownSync(config_path, config.username, config.username);
 } catch (err) {
     console.error(`Cannot write to ${config_path}`);
     process.exit(1);
