@@ -76,7 +76,11 @@ if (conf_object.conf_path.includes(config_path)) {
 try { 
     fs.writeFileSync(config_path, yaml.dump(config, {forceQuotes: true, quotingType: '"'}));
     //change file owner to the user
-    fs.chownSync(config_path, config.username, config.username);
+    //get uid of config.username
+    const uid = parseInt(fs.readFileSync(`/etc/passwd`).toString().split(`\n`).filter(line => line.startsWith(`${config.username}:`))[0].split(':')[2]);
+    //get gid of config.username
+    const gid = parseInt(fs.readFileSync(`/etc/passwd`).toString().split(`\n`).filter(line => line.startsWith(`${config.username}:`))[0].split(':')[3]);
+    fs.chownSync(config_path, uid, gid);
 } catch (err) {
     console.log(err);
     console.error(`Cannot write to ${config_path}`);
